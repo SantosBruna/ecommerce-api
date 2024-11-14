@@ -41,10 +41,12 @@ export class UsersService {
         _user.nome = userBody.nome;
         _user.email = userBody.email;
 
+        await this.authService.update(userId, userBody);
         await this.userRepository.update(_user);
     }
 
     async delete(userId: string): Promise<void> {
+        await this.authService.delete(userId);
         await this.userRepository.delete(userId);
     }
 }
