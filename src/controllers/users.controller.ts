@@ -1,98 +1,37 @@
 import{NextFunction, Request, Response} from "express";
-import {getFirestore} from "firebase-admin/firestore";
-import { ValidationError } from "../errors/validation.error";
-import { NotFoundError } from "../errors/not-found.error";
-
-type User = {
-    id: number;
-    nome: string;
-    email: string;
-}
+import { UsersService } from "../services/users.service";
+import { User } from "../models/user.model";
 
 export class UserController{
 
     static async getAll(req: Request, res: Response, next: NextFunction) {
-        try {
-            const snapshot = await getFirestore().collection("users").get();
-            const users = snapshot.docs.map(doc =>{
-                return {
-                    id: doc.id,
-                    ...doc.data()
-                };
-            })
-
-            res.send(users);
-        } catch (error) {
-           next(error);
-        }
+        res.send(await new UsersService().getAll());
     };
 
     static async getById (req: Request, res: Response, next: NextFunction) {
-        try {
-            let userId = req.params.id;
-            const doc = await getFirestore().collection("users").doc(userId).get();
-            if(doc.exists) {
-                res.send({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            } else {
-                throw new NotFoundError("Usuário não encontrado!");
-            }
- 
-        } catch (error) {
-            next(error);
-        }
+        let userId = req.params.id;
+        res.send(await new UsersService().getById(userId));
     }
 
     static async save (req: Request, res: Response, next: NextFunction) {
-        try {
-            let user = req.body;
-            if(!user.email || user.email?.length === 0) {
-                throw new ValidationError("E-mail obrigatório");
-            }
-            const userSalvo = await getFirestore().collection("users").add(user);
-
-            res.status(201).send({
-                message:`Usuário ${userSalvo.id} criado com sucesso!`
-            });
-        } catch (error) {
-            next(error);
-        }
+        await new UsersService().save(req.body);
+        res.status(201).send({
+            message:"Usuário criado com sucesso!"
+        });
     }
 
     static async update (req: Request, res: Response, next: NextFunction) {
-        try {
-            let userId = req.params.id;
-            let userBody = req.body as User;
-            let docRef = getFirestore().collection("users").doc(userId);
+        let userId = req.params.id;
+        let userBody = req.body as User;
+        await new UsersService().update(userId, userBody);
 
-            if((await docRef.get()).exists){
-                await docRef.set({
-                    nome: userBody.nome,
-                    email: userBody.email
-                });
-
-                res.send({
-                    message: "Usuário alterado com sucesso!"
-                });
-            } else {
-                throw new NotFoundError("Usuário não encontrado!");
-            }
-
-        } catch (error) {
-            next(error);
-        }
+        res.send({
+            message: "Usuário alterado com sucesso!"
+        });    
     }
 
     static async delete (req: Request, res: Response, next: NextFunction) {
-        try {
-            let userId = req.params.id;
-            await getFirestore().collection("users").doc(userId).delete();
-                    
-            res.status(204).end();
-        } catch (error) {
-            next(error);
-        }
+        await new UsersService().delete(req.params.id);
+        res.status(204).end();
     }
 }
