@@ -28,10 +28,8 @@ export class CompanyService {
     }
 
     async update(companyId: string, companyBody: Company): Promise<void> {
-        const _company = await this.companyRepository.getById(companyId);
-        if(!_company){
-            throw new NotFoundError("Empresa não encontrada!");
-        }
+        const _company = await this.getById(companyId);
+    
         _company.logomarca = companyBody.logomarca;
         _company.cpfCnpj = companyBody.cpfCnpj;
         _company.razaoSocial = companyBody.razaoSocial;

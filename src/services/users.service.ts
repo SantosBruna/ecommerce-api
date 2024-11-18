@@ -33,10 +33,7 @@ export class UsersService {
     }
 
     async update(userId: string, userBody: User): Promise<void> {
-        const _user = await this.userRepository.getById(userId);
-        if(!_user){
-            throw new NotFoundError("Usuário não encontrado!");
-        }
+        const _user = await this.getById(userId);
 
         _user.nome = userBody.nome;
         _user.email = userBody.email;

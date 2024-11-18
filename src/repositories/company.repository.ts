@@ -38,9 +38,7 @@ export class CompanyRepository {
             const typedError = error as Error; 
             console.error('Erro ao salvar a empresa:', typedError.message);
             throw new Error('Erro ao salvar a empresa: ' + typedError.message);
-        }
-        
-        
+        }  
     }
 
     async update(company: Company): Promise<void> {
